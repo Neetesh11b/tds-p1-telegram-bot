@@ -1,0 +1,47 @@
+import json
+import os
+import time
+import uuid
+from google.cloud import storage
+
+# Ye module ek run ke saare steps collect karta hai aur
+# GCS bucket me public JSONL file ke roop me upload karta hai.
+
+class RunLogger:
+    def __init__(self):
+        self.entries = []
+        self.run_id = str(uuid.uuid4())
+
+    def log(self, step, **data):
+        entry = {
+            "run_id": self.run_id,
+            "timestamp": time.time(),
+            "step": step,
+            **data
+        }
+        self.entries.append(entry)
+        print(f"[LOG] {step}: {data}")  # local debugging ke liye
+
+    def upload_and_get_url(self):
+        """
+        Saare log entries ko JSONL banata hai, GCS bucket me upload karta hai,
+        public URL return karta hai.
+        Environment variables chahiye: GCS_BUCKET_NAME
+        """
+        bucket_name = os.environ["GCS_BUCKET_NAME"]
+        filename = f"run_{self.run_id}.jsonl"
+        local_path = f"/tmp/{filename}"
+
+        with open(local_path, "w") as f:
+            for entry in self.entries:
+                f.write(json.dumps(entry) + "\n")
+
+        client = storage.Client()
+        bucket = client.bucket(bucket_name)
+        blob = bucket.blob(f"logs/{filename}")
+        blob.upload_from_filename(local_path)
+
+        # Public read access - bucket already public honi chahiye (uniform access)
+        blob.make_public()
+
+        return blob.public_url
