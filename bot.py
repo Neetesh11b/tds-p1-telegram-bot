@@ -23,7 +23,10 @@ chat_histories = defaultdict(list)
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.message.chat_id
-    text = update.message.text
+    if not update.message or not update.message.text:
+         return
+
+    text = update.message.text.strip()
 
     logger_std.info(f"Received from {chat_id}: {text}")
 
@@ -37,8 +40,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         answer_value = answer_question(chat_histories[chat_id], run_logger)
     except Exception as e:
         run_logger.log("error", error=str(e))
-        answer_value = {"error": "failed to compute answer"}
-
+        answer_value = "internal error"
     log_url = run_logger.upload_and_get_url()
 
     final_reply = {
@@ -46,7 +48,11 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "log_url": log_url
     }
 
-    reply_text = json.dumps(final_reply)
+    reply_text = json.dumps(
+    final_reply,
+    separators=(",", ":"),
+    ensure_ascii=False,
+)
     logger_std.info(f"Replying: {reply_text}")
 
     await update.message.reply_text(reply_text)

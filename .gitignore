@@ -1,2 +1,5 @@
-.env
 service-account*.json
+venv/
+.env
+__pycache__/
+*.pyc

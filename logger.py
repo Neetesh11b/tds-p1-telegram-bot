@@ -2,6 +2,7 @@ import json
 import os
 import time
 import uuid
+import tempfile
 from google.cloud import storage
 
 # Ye module ek run ke saare steps collect karta hai aur
@@ -30,8 +31,7 @@ class RunLogger:
         """
         bucket_name = os.environ["GCS_BUCKET_NAME"]
         filename = f"run_{self.run_id}.jsonl"
-        local_path = f"/tmp/{filename}"
-
+        local_path = os.path.join(tempfile.gettempdir(), filename)
         with open(local_path, "w") as f:
             for entry in self.entries:
                 f.write(json.dumps(entry) + "\n")
@@ -42,6 +42,7 @@ class RunLogger:
         blob.upload_from_filename(local_path)
 
         # Public read access - bucket already public honi chahiye (uniform access)
-        blob.make_public()
+        # blob.make_public()
+        return f"https://storage.googleapis.com/{bucket_name}/logs/{filename}"
 
-        return blob.public_url
+        # return blob.public_url
