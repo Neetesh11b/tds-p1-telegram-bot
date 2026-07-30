@@ -128,10 +128,23 @@ Never include log_url.
 Only output valid JSON.
 """
 
-    user_prompt = "Conversation:\n\n"
+    # user_prompt = "Conversation:\n\n"
 
-    for m in conversation_history:
-        user_prompt += m + "\n\n"
+    # for m in conversation_history:
+    #     user_prompt += m + "\n\n"
+
+    # if fetched:
+    #     user_prompt += "\nFetched data:\n\n"
+    #     user_prompt += "\n\n".join(fetched)
+    user_prompt = "Conversation so far (each line is one message in order):\n\n"
+
+    for i, m in enumerate(conversation_history):
+        user_prompt += f"[{i+1}] {m}\n"
+
+    user_prompt += (
+        f"\n\nAnswer ONLY the LAST message above (message [{len(conversation_history)}]: "
+        f"\"{conversation_history[-1]}\"). Ignore earlier messages except as context if needed.\n"
+    )
 
     if fetched:
         user_prompt += "\nFetched data:\n\n"
