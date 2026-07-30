@@ -281,7 +281,7 @@ def run_python_code(code, available_data, logger, timeout=CODE_TIMEOUT):
     def target():
         try:
             with contextlib.redirect_stdout(output_buffer):
-                exec(code, {"pd": pd, "__builtins__": __builtins__}, local_vars)
+                exec(code, {"pd": pd}, local_vars)
             result_holder["success"] = True
         except Exception as e:
             result_holder["success"] = False
