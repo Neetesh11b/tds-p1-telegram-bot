@@ -167,6 +167,16 @@ Only output valid JSON.
 
         parsed = raw
 
+    # ---- FIX: agar LLM ne khud "answer" key ke andar wrap kar diya ho
+    # (e.g. {"answer": "Chennai"} ki jagah poora {"answer": {"answer": "Chennai"}}
+    # ban raha tha), to yahan usse unwrap kar denge taaki double-nesting na ho.
+    if (
+        isinstance(parsed, dict)
+        and "answer" in parsed
+        and len(parsed) <= 2
+    ):
+        parsed = parsed["answer"]
+
     logger.log(
         "answer_generated",
         answer=parsed,
